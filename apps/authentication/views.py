@@ -23,7 +23,7 @@ def login_view(request):
             username = form.cleaned_data.get("username")
             password1 = form.cleaned_data.get("password")
             
-            result = execute_query(('SELECT password, usuario_id FROM usuarios u  ' +
+            result = execute_query(('SELECT password, usuario_id, cliente_id FROM usuarios u  ' +
                                     ' WHERE u.usuario = \'' + username + '\' '))
             
             user = authenticate(username='admin', password='admin')
@@ -36,6 +36,7 @@ def login_view(request):
                         login(request, user)
                         request.session['username']  = username
                         request.session['usuario_id']  = row[1]
+                        request.session['cliente_id']  = row[2]
                         if 'next' in request.GET:
                             return redirect(request.GET['next'])
                         else:

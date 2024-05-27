@@ -1,5 +1,5 @@
 from django import forms
-from .models import Plataforma
+from .models import Departamento
 from apps.authentication.db import execute_query
 
 import json
@@ -8,21 +8,40 @@ def readJson(filename):
     with open(filename, 'r') as fp:
         return json.load(fp)
 
-def getPlataformas():
-    plataformas = [('0', 'Seleccione')]  
-    plataformas.append(('1', 'Plataforma 1')) 
-    plataformas.append(('2', 'Plataforma 2'))
+def getDepartamentos():
+    departamentos = [('0', 'Seleccione')]
+    result = execute_query(('SELECT * ' +
+                                    ' FROM departamento c ' +
+                                    ' ORDER BY c.nombre '))
+    for row in result:
+        departamentos.append((row[0], row[1]))
 
-    return plataformas
+    return departamentos
 
-class PlataformasForm(forms.ModelForm):
-    platafromas = forms.ChoiceField(
-                    choices = getPlataformas(),
-                    required = False, label='Plataforma',
-                    widget=forms.Select(attrs={'class': 'form-control selectpicker', 'id': 'id_plataforma',  'name': 'id_plataforma', 'data-style': 'btn-success'}),
+def getTipoPdv():
+    tipos = [('0', 'Seleccione')]
+    result = execute_query(('SELECT * ' +
+                                    ' FROM tipo_pdv c ' +
+                                    ' ORDER BY c.nombre '))
+    for row in result:
+        tipos.append((row[0], row[1]))
+
+    return tipos
+
+class DepartamentosForm(forms.ModelForm):
+    id_departamento = forms.ChoiceField(
+                    choices = getDepartamentos(),
+                    required = True, label='Departamento',
+                    widget=forms.Select(attrs={'class': 'form-control selectpicker', 'id': 'id_departamento',  'name': 'id_departamento', 'data-style': 'btn-success', 'data-live-search': 'true', 'data-parsley-validate': 'true', 'required': ''}),
+                    )
+    
+    id_tipo_pdv = forms.ChoiceField(
+                    choices = getTipoPdv(),
+                    required = True, label='Tipos',
+                    widget=forms.Select(attrs={'class': 'form-control selectpicker', 'id': 'id_tipo_pdv',  'name': 'id_tipo_pdv', 'data-style': 'btn-success', 'data-live-search': 'true', 'data-parsley-validate': 'true', 'required': ''}),
                     )
 
     class Meta:
-            model = Plataforma
-            fields = ['plataforma']
+            model = Departamento
+            fields = ['departamento']
 

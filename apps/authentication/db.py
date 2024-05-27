@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 #import pyodbc
 import pymysql
 
-engine = create_engine('mysql+pymysql://root:@localhost:3307/app_rutero_pia',
+engine = create_engine('mysql+pymysql://sql5709299:M68Wh5c5sP@sql5.freemysqlhosting.net:3306/sql5709299',
     isolation_level="READ UNCOMMITTED", future=True)
 
 conn = engine.connect()

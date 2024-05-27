@@ -21,9 +21,18 @@ urlpatterns = [
     path('set-permiso', views.setPermiso, name='set-permiso'),
     path('get-perfil', views.getPerfil, name='get-perfil'),
     path('set-perfil-usuario', views.setPerfilUsuario, name='set-perfil-usuario'),
+    path('get-municipio-xdepartamento', views.getMunicipioXDepartamento, name='get-municipio-xdepartamento'),
+    path('get-pdv-xmunicipio', views.getPdvXMunicipio, name='get-pdv-xmunicipio'),
+    path('get-usuarios-opt', views.getUsuariosOpt, name='get-usuarios-opt'),
+    path('get-pdv', views.getPdv, name='get-pdv'),
+    path('set-pdv', views.setPdv, name='set-pdv'),
+    path('get-rutas', views.getRutas, name='get-rutas'),
+    path('set-rutas', views.setRutas, name='set-rutas'),
+    
     
     
     path('status-session',views.status_session, name='status-session'),
+    path('login-app',views.login_app, name='login-app'),
     
     
     re_path(r'public\/*', views.publicLink, name='public-link'),

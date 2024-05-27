@@ -1,0 +1,412 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Perfil {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+    .input-group-addon {
+        color: #fb002dbf;
+        border-color: #fb002dbf;
+        border: none
+    }
+
+    .input-group-addon:focus {
+        outline: 0 !important
+    }
+
+    #map {
+        height: 400px;
+        width: 100%;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content">
+    <div class="row">
+        <p>
+            {% comment %} <a href="javascript:;" onclick="frmPdv();" data-toggle="tooltip" title="Crear Punto de Venta" class="btn btn-inverse btn-icon btn-circle btn-success" data-original-title="Crear Punto de Venta"><i class="tim-icons icon-pencil"></i></a> {% endcomment %}
+        </p>
+    </div>
+    <form id="form">
+        {% csrf_token %}
+
+        {% for error in errors  %}
+        <div class="alert alert-danger mb-4" role="alert">
+            <strong>{{ error }}</strong>
+        </div>
+        {% endfor %}
+
+        
+        <div class="row">
+            {% comment %} <div class="col-lg-6">
+                <div class="mb-4">
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <select id="id_usuario" name="id_usuario" class="form-control selectpicker" data-live-search="true" data-style="btn-success" data-parsley-validate="true">
+                            <option selected disabled value="0">Seleccione</option>
+                        </select>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+        </div>
+
+        <div class="row justify-content-md-center">
+            <div class="col-lg-4">
+                <input type="submit" value="Buscar" class="form-control btn btn-default" id="form_btn">
+            </div>
+        </div>
+    </form>
+    <br>
+    <div class="row col-lg-12">
+        <div id="calendar" class="col-lg-12">
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PDV -->
+<div class="modal fade in" id="rutaModal" tabindex="-1" role="dialog" aria-labelledby="rutaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content card">
+            <form id="frmRuta" data-parsley-validate="true" onsubmit="return false;">
+                <div class="modal-header">
+                    <h5 class="card-title" id="rutaModalLabel">Asignar PDV</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Departamento</label>
+                                    {{ form.id_departamento }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Municipio</label>
+                                    <select id="id_municipio" name="id_municipio" class="form-control selectpicker" data-live-search="true" data-style="btn-success" required data-parsley-validate="true">
+                                        <option selected disabled value="0">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Punto de Venta</label>
+                                    <select id="id_pdv" name="id_pdv" class="form-control selectpicker" data-live-search="true" data-style="btn-success" required data-parsley-validate="true">
+                                        <option selected disabled value="0">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Usuario</label>
+                                    <select id="id_usuario" name="id_usuario" class="form-control selectpicker" data-live-search="true" data-style="btn-success" required data-parsley-validate="true">
+                                        <option selected disabled value="0">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <div class="input-group date fecha">
+                                        <input id="fecha" name="fecha" type="text" class="form-control" data-style="btn-success"><span class="input-group-addon" required data-parsley-validate="true"><i class="tim-icons icon-calendar-60"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Hora Ingreso</label>
+                                    <input type="time" id="hora_ingreso" name="hora_ingreso" class="form-control" step="3600" data-style="btn-success" required data-parsley-validate="true">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="mb-4">
+                                <div class="form-group">
+                                    <label>Hora Salida</label>
+                                    <input type="time" id="hora_salida_input" class="form-control" step="3600" data-style="btn-success" required data-parsley-validate="true">
+                                    <input type="hidden" name="hora_salida" id="hora_salida">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+                    <button id="btnCrearPdv" type="submit" class="btn btn-secundary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+    var accion = 1;
+    var idPdv = 0;
+    var map;
+    var geocoder;
+    var marker;
+    var directionsDisplay;
+    var calendar;
+    
+    function datos() {
+        $.ajax({
+            type: "POST",
+            url: "{% url 'get-rutas' %}",
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                var rutas = [];
+                if (data.datos.length < 1) {
+                    general.showNotificationOwn('top', 'right', 'success', 'Sin Informacion', 'ATENCION');
+                    $(".selectpicker").selectpicker("refresh");
+                    frmPdv();
+                } else {
+                    data.datos.forEach(function(ruta) {
+                        var pdv = {};
+                        if (ruta[2] == 1) {
+                            pdv = {
+                                id: ruta[0],
+                                title: ruta[1],
+                                start: ruta[3] + 'T' +  ruta[4],
+                                backgroundColor: 'blue'
+                            }
+                        } else {
+                            pdv = {
+                                id: ruta[0],
+                                title: ruta[1],
+                                start: ruta[3] + 'T' +  ruta[4],
+                                backgroundColor: 'green'
+                            }
+                        }
+                        rutas.push(pdv);                        
+                    });
+                    
+                }                
+        
+                var calendarEl = document.getElementById('calendar');
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'es', // Configura el idioma a español
+                    headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: rutas,
+                    dateClick: function(info) {
+                        // Mostrar el modal al hacer clic en una fecha
+                        var modal = new bootstrap.Modal(document.getElementById('rutaModal'));
+                        document.getElementById('fecha').value = info.dateStr; // Configurar la fecha en el input
+                        initMap();
+                        modal.show();
+                    }
+                });
+                calendar.render();
+            }
+        });
+
+    }
+
+    function frmPdv() {
+        initMap();
+        $('#rutaModal').modal('show');
+    }
+
+    function initMap() {
+        directionsDisplay = new google.maps.DirectionsRenderer();
+        var colombia = new google.maps.LatLng(4.667784, -74.057185000000);
+        var mapOptions = {
+            zoom: 15,
+            center: colombia,
+            disableDoubleClickZoom: true,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        directionsDisplay.setMap(map);
+    }
+
+    function setMarker(lat, lng) {
+        var location = new google.maps.LatLng(lat, lng);
+        if (marker) {
+            marker.setMap(null);  // Remove the existing marker
+        }
+
+        marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            draggable: true
+        });
+
+        map.panTo(location);
+
+        google.maps.event.addListener(marker, 'dragend', function(event) {
+            $('#latitud').val(this.getPosition().lat());
+            $('#longitud').val(this.getPosition().lng());
+        });
+
+        google.maps.event.addListener(marker, 'click', function(event) {
+            $('#latitud').val(this.getPosition().lat());
+            $('#longitud').val(this.getPosition().lng());
+        });
+    }
+
+    function getUsuarios() {        
+        $.ajax({
+            type: "POST",
+            url: "{% url 'get-usuarios-opt' %}",
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                $(".windows8").hide();
+                $('#divSensor').show();
+                let html_data = '<option  selected disabled value="0">Seleccione</option>';
+                data.datos.forEach(function(usuario) {
+                    html_data += `<option value="${usuario[0]}">${usuario[1]}</option>`
+                });
+                $("#id_usuario").html(html_data);
+                $("#id_usuario").selectpicker("refresh");
+            }
+        });
+    }
+
+    function setPdv() {
+        var hora1 = document.getElementById("hora_ingreso").value;
+        var hora2 = document.getElementById("hora_salida_input").value;
+  
+        // Crear objetos de fecha para calcular la diferencia
+        var fecha1 = new Date("2000-01-01T" + hora1);
+        var fecha2 = new Date("2000-01-01T" + hora2);
+  
+        // Calcular la diferencia en minutos
+        var diferenciaMs = fecha2 - fecha1;
+        var diferenciaMinutos = Math.abs(diferenciaMs / 60000);
+
+        if (diferenciaMs  < 0 || diferenciaMinutos < 0) {
+            general.showNotificationOwn('top', 'center', 'warning', 'Atención', 'El tiempo de salida debe ser mayor al de entrada');
+        } else {       
+            $("#hora_salida").val(diferenciaMinutos); 
+            $.ajax({
+                type: "POST",
+                url: "{% url 'set-rutas' %}",
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'frm': JSON.stringify(general.obtenerFrm("frmRuta")),
+                },
+                success: function(data) {
+                    if (data['OK'] == '0') {
+                        general.showNotificationOwn('top', 'center', 'warning', 'El usuario ya tiene este punto asignado este día.', 'Atención');
+                    } else {
+                        general.showNotificationOwn('top', 'center', 'success', 'Atención', 'Ruta Creada');
+                        datos();
+                        $('#rutaModal').modal('hide');
+                    }
+                }
+            });
+        }
+
+    }
+    
+    $(document).ready(function() {
+        getUsuarios();
+        $(".selectpicker").selectpicker("refresh");
+        $(".input-group.date.fecha").datepicker({
+            format: "yyyy-mm-dd",
+            startView: 0,
+            minViewMode: 0,
+            maxViewMode: 2
+        });
+        $("#map").hide();
+        datos();
+
+        $("#id_departamento").change(function() {
+            var id = $(this).val();
+            $('#divSensor').hide();
+            $("#id_municipio").val('').trigger('change');
+            $(".windows8").show();
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'get-municipio-xdepartamento' %}",
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'id': id
+                },
+                success: function(data) {
+                    $(".windows8").hide();
+                    $('#divSensor').show();
+                    let html_data = '<option  selected disabled value="0">Seleccione</option>';
+                    data.datos.forEach(function(municipio) {
+                        html_data += `<option value="${municipio[0]}">${municipio[1]}</option>`
+                    });
+                    $("#id_municipio").html(html_data);
+                    $("#id_municipio").selectpicker("refresh");
+                }
+            });
+
+        });
+
+        $("#id_municipio").change(function() {
+            var id = $(this).val();
+            $("#id_pdv").val('').trigger('change');
+            $(".windows8").show();
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'get-pdv-xmunicipio' %}",
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'id': id
+                },
+                success: function(data) {
+                    $(".windows8").hide();
+                    let html_data = '<option  selected disabled value="0">Seleccione</option>';
+                    data.datos.forEach(function(pdv) {
+                        html_data += `<option value="${pdv[0]}">${pdv[1]}</option>`
+                    });
+                    $("#id_pdv").html(html_data);
+                    $("#id_pdv").selectpicker("refresh");
+                }
+            });
+
+        });
+    
+        $('#frmRuta').parsley().on('form:submit', function () {
+            setPdv();
+        });
+    });
+</script>
+
+{% endblock javascripts %}
