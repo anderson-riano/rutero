@@ -410,14 +410,14 @@ def login_app(request):
     result = execute_query(('SELECT password, usuario_id, cliente_id, perfil_id FROM usuarios u  ' +
                                     ' WHERE u.usuario = \'' + usuario + '\' '))
 
-    msg = None
+    msg = 'Usuario/Clave Invalido'
     for row in result:
         msg = 'Usuario/Clave Invalido'
         validate_pass = check_password_hash(row[0], clave)
         if validate_pass == True:
             rowList = row_to_dict(row)
             rowList['password'] = ''
-            return JsonResponse({'status': 1, 'body': rowList})
+            return JsonResponse({'status': 1, 'usuario': rowList})
             
                         
     return JsonResponse({'status': 0, 'message': msg})
