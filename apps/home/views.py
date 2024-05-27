@@ -18,6 +18,7 @@ from datetime import datetime, date, timedelta
 import json
 import base64
 import os
+import ast
 import statistics
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -407,7 +408,7 @@ def login_app(request):
         usuario = frm['usuario']
         clave = frm['clave']
     
-    result = execute_query(('SELECT password, usuario_id, cliente_id, perfil_id FROM usuarios u  ' +
+    result = execute_query(('SELECT password, usuario_id, nombre FROM usuarios u  ' +
                                     ' WHERE u.usuario = \'' + usuario + '\' '))
 
     msg = 'Usuario/Clave Invalido'
@@ -416,11 +417,89 @@ def login_app(request):
         validate_pass = check_password_hash(row[0], clave)
         if validate_pass == True:
             rowList = row_to_dict(row)
-            rowList['password'] = ''
-            return JsonResponse({'status': 1, 'body': {'usuario': rowList}})
+            rowList.pop('password', None)
+            rowList['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S');
+            token = generete_token(str(rowList))
+            usuario = {'token': token, 'nombre': rowList['nombre']}
+            return JsonResponse({'status': 1, 'body': {'usuario': usuario}})
             
                         
     return JsonResponse({'status': 0, 'message': msg})
+
+def generete_token(strEnconded) :
+    fernet = Fernet(b'uCXUiTPiXhAwfpgSFPvwghGxIkXk8XKlertb25Wrscg=')
+
+    # Datos a cifrar
+    datos = strEnconded.encode()
+
+    # Cifra los datos
+    token = fernet.encrypt(datos)
+
+    return token.decode()
+
+def decrypt_token(token):
+    fernet = Fernet(b'uCXUiTPiXhAwfpgSFPvwghGxIkXk8XKlertb25Wrscg=')
+    datos_descifrados = fernet.decrypt(token.encode()).decode()
+    return datos_descifrados
+
+def app_get_rutas(request):
+    token = request.GET.get('token')
+    fecha = request.GET.get('fecha')
+    """ if request.method == 'GET' and token == None:
+        postData = json.loads(request.body)
+        token = postData['token']
+        fecha = postData['fecha'] """
+        
+    if token == None:
+        return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
+    
+    dataToken = ast.literal_eval(decrypt_token(token))
+    
+    result = execute_query(('SELECT  ' +
+                                ' r.ruta_id, r.estado_ruta_id, p.pdv_id, p.nombre, p.lat, p.lon,' +
+                                ' p.rango, r.fecha_visita, r.hora_ingreso, r.tiempo_visita ' +
+                            ' FROM ruta r' +
+                            ' INNER JOIN pdv p ON p.pdv_id = r.pdv_id ' +
+                            ' WHERE r.usuario_id = \'' + str(dataToken['usuario_id']) + '\' AND r.fecha_visita = \'' + fecha + '\'' +
+                            ' ORDER BY r.hora_ingreso '))
+    
+    rutas = []
+    for row in result:
+        rowList = row_to_dict(row)
+        rutas.append(rowList)
+    if len(rutas) > 0:
+        return JsonResponse({'status': 1, 'body': {'rutas': rutas}})
+    
+    
+    return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
+    
+def app_set_rutas(request):
+    token = request.GET.get('token')
+    ruta_id = request.POST.get('ruta_id')
+    lat = request.POST.get('lat')
+    lon = request.POST.get('lon')
+    if request.method == 'GET' and token == None:
+        postData = json.loads(request.body)
+        # token = postData['token']
+        ruta_id = postData['ruta_id']
+        lat = postData['lat']
+        lon = postData['lon']
+        
+    if token == None or ruta_id == None or lat == None or lon == None:
+        return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
+    
+    dataToken = ast.literal_eval(decrypt_token(token))
+    
+    insert_update_query(('UPDATE ruta_ejecutada ' +
+                            ' set estado_ruta_id = 2' +
+                            ' where = ' + str(ruta_id) + ''))
+    
+    insert_update_query(('INSERT INTO ruta_ejecutada ' +
+                            '(ruta_id, lat_ingreso, lon_ingreso) VALUES ' +
+                            '(' + str(ruta_id) + ', \'' +  str(lat) + '\',\'' +  str(lon) + '\')'))
+    
+    
+    return JsonResponse({'status': 1})
 
 def row_to_dict(row):
     # Suponiendo que 'row' es un objeto de tipo 'Row' y tiene un atributo '_fields' que contiene los nombres de las columnas

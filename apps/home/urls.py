@@ -33,6 +33,8 @@ urlpatterns = [
     
     path('status-session',views.status_session, name='status-session'),
     path('login-app',views.login_app, name='login-app'),
+    path('app-get-rutas',views.app_get_rutas, name='app-get-rutas'),
+    path('app-set-rutas',views.app_set_rutas, name='app-set-rutas'),
     
     
     re_path(r'public\/*', views.publicLink, name='public-link'),
