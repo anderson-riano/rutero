@@ -473,6 +473,7 @@ def app_get_rutas(request):
     
     return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
     
+@csrf_exempt
 def app_set_rutas(request):
     token = request.GET.get('token')
     ruta_id = request.POST.get('ruta_id')
