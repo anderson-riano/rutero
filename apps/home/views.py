@@ -417,7 +417,7 @@ def login_app(request):
         if validate_pass == True:
             rowList = row_to_dict(row)
             rowList['password'] = ''
-            return JsonResponse({'status': 1, 'body': rowList})
+            return JsonResponse({'status': 1, 'body': {'usuario': rowList}})
             
                         
     return JsonResponse({'status': 0, 'message': msg})
