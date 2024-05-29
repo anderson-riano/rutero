@@ -479,7 +479,7 @@ def app_set_rutas(request):
     ruta_id = request.POST.get('ruta_id')
     lat = request.POST.get('lat')
     lon = request.POST.get('lon')
-    if request.method == 'GET' and token == None:
+    if request.method == 'POST' and ruta_id == None:
         postData = json.loads(request.body)
         # token = postData['token']
         ruta_id = postData['ruta_id']
@@ -491,14 +491,45 @@ def app_set_rutas(request):
     
     dataToken = ast.literal_eval(decrypt_token(token))
     
-    insert_update_query(('UPDATE ruta_ejecutada ' +
+    insert_update_query(('UPDATE ruta ' +
                             ' set estado_ruta_id = 2' +
-                            ' where = ' + str(ruta_id) + ''))
+                            ' where ruta_id = ' + str(ruta_id) + ''))
     
     insert_update_query(('INSERT INTO ruta_ejecutada ' +
                             '(ruta_id, lat_ingreso, lon_ingreso) VALUES ' +
                             '(' + str(ruta_id) + ', \'' +  str(lat) + '\',\'' +  str(lon) + '\')'))
     
+    result = execute_query(('SELECT  ' +
+                                ' max(ruta_ejecutada_id) ' +
+                            ' FROM ruta_ejecutada r' +
+                            ' WHERE r.ruta_id = \'' + str(ruta_id) + '\' '))
+    
+    ruta_ejecutada_id = result[0][0]
+    
+    
+    return JsonResponse({'status': 1, "message": ruta_ejecutada_id})
+    
+@csrf_exempt
+def app_set_out_rutas(request):
+    token = request.GET.get('token')
+    ruta_ejecutada_id = request.POST.get('ruta_ejecutada_id')
+    lat = request.POST.get('lat')
+    lon = request.POST.get('lon')
+    if request.method == 'POST' and ruta_ejecutada_id == None:
+        postData = json.loads(request.body)
+        # token = postData['token']
+        ruta_ejecutada_id = postData['ruta_id']
+        lat = postData['lat']
+        lon = postData['lon']
+        
+    if token == None or ruta_ejecutada_id == None or lat == None or lon == None:
+        return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
+    
+    dataToken = ast.literal_eval(decrypt_token(token))
+    
+    insert_update_query(('UPDATE ruta_ejecutada ' +
+                            ' set lat_salida = \'' +  str(lat) + '\', lon_salida = \'' +  str(lat) + '\', fecha_salida = now() ' +
+                            ' where ruta_ejecutada_id = ' + str(ruta_ejecutada_id) + ''))    
     
     return JsonResponse({'status': 1})
 
