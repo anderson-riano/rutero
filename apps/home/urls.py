@@ -35,6 +35,7 @@ urlpatterns = [
     path('login-app',views.login_app, name='login-app'),
     path('app-get-rutas',views.app_get_rutas, name='app-get-rutas'),
     path('app-set-rutas',views.app_set_rutas, name='app-set-rutas'),
+    path('app-set-out-rutas',views.app_set_out_rutas, name='app-set-out-rutas'),
     
     
     re_path(r'public\/*', views.publicLink, name='public-link'),
