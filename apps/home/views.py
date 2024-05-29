@@ -518,7 +518,7 @@ def app_set_out_rutas(request):
     if request.method == 'POST' and ruta_ejecutada_id == None:
         postData = json.loads(request.body)
         # token = postData['token']
-        ruta_ejecutada_id = postData['ruta_id']
+        ruta_ejecutada_id = postData['ruta_ejecutada_id']
         lat = postData['lat']
         lon = postData['lon']
         
@@ -528,7 +528,7 @@ def app_set_out_rutas(request):
     dataToken = ast.literal_eval(decrypt_token(token))
     
     insert_update_query(('UPDATE ruta_ejecutada ' +
-                            ' set lat_salida = \'' +  str(lat) + '\', lon_salida = \'' +  str(lat) + '\', fecha_salida = now() ' +
+                            ' set lat_salida = \'' +  str(lat) + '\', lon_salida = \'' +  str(lon) + '\', fecha_salida = now() ' +
                             ' where ruta_ejecutada_id = ' + str(ruta_ejecutada_id) + ''))    
     
     return JsonResponse({'status': 1})
