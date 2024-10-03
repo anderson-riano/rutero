@@ -319,9 +319,9 @@ def getPdvXMunicipio(request):
 def getUsuariosOpt(request):
     usuarios = []
     if id != '':
-        result = execute_query(('SELECT * FROM usuarios WHERE cliente_id = ' + request.session['cliente_id'] + ' ORDER BY nombre '))
+        result = execute_query(('SELECT usuario_id, nombre FROM usuarios WHERE cliente_id = ' + str(request.session['cliente_id']) + ' ORDER BY nombre '))
         for row in result:
-            usuarios.append((row[0], row[2]))
+            usuarios.append((row[0], row[1]))
 
     return JsonResponse({'datos': usuarios})
 
@@ -376,7 +376,8 @@ def setRutas(request):
     
     result = execute_query(('SELECT count(*)' +
                             ' FROM ruta r' +
-                            ' WHERE cliente_id = \'' + request.session['cliente_id'] + '\' AND r.pdv_id = \'' + frm['id_pdv'] + '\' AND r.usuario_id = \'' + frm['id_usuario'] + '\' AND r.fecha_visita = \'' + frm['fecha'] + '\''))
+                            ' WHERE cliente_id = \'' + str(request.session['cliente_id']) + '\' AND r.pdv_id = \'' + 
+                            frm['id_pdv'] + '\' AND r.usuario_id = \'' + frm['id_usuario'] + '\' AND r.fecha_visita = \'' + frm['fecha'] + '\''))
     conRegistro = False
     for row in result:
         if (row[0] < 1):
@@ -471,7 +472,7 @@ def app_get_rutas(request):
         return JsonResponse({'status': 1, 'body': {'rutas': rutas}})
     
     
-    return JsonResponse({'status': 0, 'message': 'Datos Incompletos'})
+    return JsonResponse({'status': 0, 'message': 'Sin Rutas'})
     
 @csrf_exempt
 def app_set_rutas(request):
